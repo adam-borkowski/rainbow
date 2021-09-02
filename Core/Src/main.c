@@ -57,6 +57,33 @@ static void MX_TIM4_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+typedef struct {
+    uint8_t red;
+    uint8_t green;
+    uint8_t blue;
+}color_t;
+
+static const color_t rainbow[] = {
+        {.red=255, .green=0, .blue=0},
+        {.red=255, .green=127, .blue=0},
+        {.red=255, .green=255, .blue=0},
+        {.red=127, .green=255, .blue=0},
+        {.red=0, .green=255, .blue=0},
+        {.red=0, .green=255, .blue=127},
+        {.red=0, .green=255, .blue=255},
+        {.red=0, .green=127, .blue=255},
+        {.red=0, .green=0, .blue=255},
+        {.red=127, .green=0, .blue=255},
+        {.red=255, .green=0, .blue=255},
+        {.red=255, .green=0, .blue=127}
+};
+
+static void set_color(const color_t * colors) {
+    htim4.Instance->CCR1 = colors->red;
+    htim4.Instance->CCR2 = colors->green;
+    htim4.Instance->CCR3 = colors->blue;
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -89,13 +116,28 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
-
+  if (HAL_OK != HAL_TIM_OC_Start(&htim4, TIM_CHANNEL_1)) {
+      /* Starting Error */
+      Error_Handler();
+  }
+  if (HAL_OK != HAL_TIM_OC_Start(&htim4, TIM_CHANNEL_2)) {
+      /* Starting Error */
+      Error_Handler();
+  }
+  if (HAL_OK != HAL_TIM_OC_Start(&htim4, TIM_CHANNEL_3)) {
+      /* Starting Error */
+      Error_Handler();
+  }
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+      for(uint8_t i=0; i<(sizeof(rainbow)/sizeof(rainbow[0])); i++) {
+              set_color(&rainbow[i]);
+              HAL_Delay(500);
+      }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -167,7 +209,7 @@ static void MX_TIM4_Init(void)
   htim4.Instance = TIM4;
   htim4.Init.Prescaler = 0;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 65535;
+  htim4.Init.Period = 255;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim4) != HAL_OK)
